@@ -15,6 +15,7 @@ plt.show()
 
 X = np.concatenate((-np.ones((N, 1)), X), axis=1)
 
+
 def dividir_dados():
     indexOfOitentaPorCento = int(N * 0.8)
 
@@ -31,8 +32,10 @@ def dividir_dados():
 
     return X_treino, Y_treino, X_teste, Y_teste
 
+
 def sign(x):
     return 1 if x >= 0 else -1
+
 
 def train_perceptron(X, Y, max_iterations, learning_rate):
     num_samples, num_features = X.shape
@@ -48,13 +51,16 @@ def train_perceptron(X, Y, max_iterations, learning_rate):
 
             if target != y_t:
                 error_exists = True
-                weights = weights + learning_rate * (target - y_t) * input_sample
+                weights = weights + learning_rate * \
+                    (target - y_t) * input_sample
         if not error_exists:
             break
     return weights
 
+
 def mean_squared_error(d, u):
     return np.mean((d - u) ** 2)
+
 
 def train_adaline(X, d, eta, max_epochs, epsilon):
     num_samples, num_features = X.shape
@@ -75,6 +81,7 @@ def train_adaline(X, d, eta, max_epochs, epsilon):
 
     return w
 
+
 def perceptron_test(w, x_unknown):
     u = np.dot(w, x_unknown)
     y_t = sign(u)
@@ -83,6 +90,7 @@ def perceptron_test(w, x_unknown):
     # else:
     #     print("PERCEPTRON: A amostra pertence à classe B")
     return y_t
+
 
 def adaline_test(w, x_unknown):
     u = np.dot(w, x_unknown)
@@ -98,12 +106,14 @@ def adaline_test(w, x_unknown):
 def acuracia(y_true, y_pred):
     return sum(y_true == y_pred) / len(y_true)
 
+
 def sensibilidade(y_true, y_pred):
     TP = sum((y_true == 1) & (y_pred == 1))
     FN = sum((y_true == 1) & (y_pred == -1))
     if TP + FN == 0:
         return 0  # Evita divisão por zero
     return TP / (TP + FN)
+
 
 def especificidade(y_true, y_pred):
     TN = sum((y_true == -1) & (y_pred == -1))
@@ -131,11 +141,35 @@ def plot_confusion_matrix(y_true, y_pred):
     plt.xlabel("Previsões")
     plt.ylabel("Rótulos Reais")
     plt.show()
-    
-X_treino, Y_treino, X_teste, Y_teste = dividir_dados()
 
 
-for i in range(10):
+accuracies_perceptron = []
+sensitivities_perceptron = []
+specificities_perceptron = []
+accuracies_adaline = []
+sensitivities_adaline = []
+specificities_adaline = []
+
+best_accuracy_perceptron = -1
+worst_accuracy_perceptron = 2
+best_accuracy_adaline = -1
+worst_accuracy_adaline = 2
+
+Y_teste_best_accuracy_perceptron = []
+X_teste_best_accuracy_perceptron = []
+
+Y_teste_worst_accuracy_perceptron = []
+X_teste_worst_accuracy_perceptron = []
+
+Y_teste_best_accuracy_adaline = []
+X_teste_best_accuracy_adaline = []
+
+Y_teste_worst_accuracy_adaline = []
+X_teste_worst_accuracy_adaline = []
+
+for round in range(10):
+    X_treino, Y_treino, X_teste, Y_teste = dividir_dados()
+
     w_perceptron = train_perceptron(X_treino, Y_treino, 100, 0.8)
     w_adaline = train_adaline(X_treino, Y_treino, 0.001, 100, 0.7)
 
@@ -149,49 +183,141 @@ for i in range(10):
     accuracy_perceptron = acuracia(Y_teste, y_pred_perceptron)
     accuracy_adaline = acuracia(Y_teste, y_pred_adaline)
 
-# Calcule as métricas para o Adaline
-accuracy_adaline = acuracia(Y_teste, y_pred_adaline)
-sensitivity_adaline = sensibilidade(Y_teste, y_pred_adaline)
-specificity_adaline = especificidade(Y_teste, y_pred_adaline)
+    accuracies_perceptron.append(accuracy_perceptron)
+    accuracies_adaline.append(accuracy_adaline)
 
-# Determine a melhor e a pior acurácia
-best_accuracy_model = 'Perceptron' if accuracy_perceptron > accuracy_adaline else 'Adaline'
-worst_accuracy_model = 'Perceptron' if accuracy_perceptron < accuracy_adaline else 'Adaline'
+    sensitivity_perceptron = sensibilidade(Y_teste, y_pred_perceptron)
+    sensitivity_adaline = sensibilidade(Y_teste, y_pred_adaline)
 
-# Crie matrizes de confusão para a melhor e pior acurácia
-if best_accuracy_model == 'Perceptron':
-    plot_confusion_matrix(Y_teste, y_pred_perceptron)
-else:
-    plot_confusion_matrix(Y_teste, y_pred_adaline)
+    sensitivities_perceptron.append(sensitivity_perceptron)
+    sensitivities_adaline.append(sensitivity_adaline)
 
-if worst_accuracy_model == 'Perceptron':
-    plot_confusion_matrix(Y_teste, y_pred_perceptron)
-else:
-    plot_confusion_matrix(Y_teste, y_pred_adaline)
+    specificity_perceptron = especificidade(Y_teste, y_pred_perceptron)
+    specificity_adaline = especificidade(Y_teste, y_pred_adaline)
 
-print(f"Acurácia do Perceptron: {accuracy_perceptron * 100}")
-print(f"Acurácia do Adaline: {accuracy_adaline * 100}")
+    specificities_perceptron.append(specificity_perceptron)
+    specificities_adaline.append(specificity_adaline)
 
-# Plot do hiperplano de separação do Perceptron
-w_perceptron = train_perceptron(X_treino, Y_treino, 100, 0.7)
-xx = np.linspace(-2, 2)
-yy_perceptron = -w_perceptron[0]/w_perceptron[2] - w_perceptron[1]/w_perceptron[2] * xx
+    best_accuracy_perceptron = max(
+        best_accuracy_perceptron, accuracy_perceptron)
+    worst_accuracy_perceptron = min(
+        worst_accuracy_perceptron, accuracy_perceptron)
+    best_accuracy_adaline = max(best_accuracy_adaline, accuracy_adaline)
+    worst_accuracy_adaline = min(worst_accuracy_adaline, accuracy_adaline)
 
-plt.plot(xx, yy_perceptron, 'k-')
-plt.scatter(X[:, 1], X[:, 2], c=Y, linewidths=0.4, edgecolors='k')
-plt.title("Hiperplano de Separação do Perceptron")
+    if accuracy_perceptron == best_accuracy_perceptron:
+        Y_teste_best_accuracy_perceptron = Y_teste
+        X_teste_best_accuracy_perceptron = X_teste
+    if accuracy_perceptron == worst_accuracy_perceptron:
+        Y_teste_worst_accuracy_perceptron = Y_teste
+        X_teste_worst_accuracy_perceptron = X_teste
+    if accuracy_adaline == best_accuracy_adaline:
+        Y_teste_best_accuracy_adaline = Y_teste
+        X_teste_best_accuracy_adaline = X_teste
+    if accuracy_adaline == worst_accuracy_adaline:
+        Y_teste_worst_accuracy_adaline = Y_teste
+        X_teste_worst_accuracy_adaline = X_teste
+
+
+# Calculate statistics
+mean_accuracy_perceptron = np.mean(accuracies_perceptron)
+std_accuracy_perceptron = np.std(accuracies_perceptron)
+max_accuracy_perceptron = max(accuracies_perceptron)
+min_accuracy_perceptron = min(accuracies_perceptron)
+
+mean_sensitivity_perceptron = np.mean(sensitivities_perceptron)
+std_sensitivity_perceptron = np.std(sensitivities_perceptron)
+max_sensitivity_perceptron = max(sensitivities_perceptron)
+min_sensitivity_perceptron = min(sensitivities_perceptron)
+
+mean_specificity_perceptron = np.mean(specificities_perceptron)
+std_specificity_perceptron = np.std(specificities_perceptron)
+max_specificity_perceptron = max(specificities_perceptron)
+min_specificity_perceptron = min(specificities_perceptron)
+
+mean_accuracy_adaline = np.mean(accuracies_adaline)
+std_accuracy_adaline = np.std(accuracies_adaline)
+max_accuracy_adaline = max(accuracies_adaline)
+min_accuracy_adaline = min(accuracies_adaline)
+
+mean_sensitivity_adaline = np.mean(sensitivities_adaline)
+std_sensitivity_adaline = np.std(sensitivities_adaline)
+max_sensitivity_adaline = max(sensitivities_adaline)
+min_sensitivity_adaline = min(sensitivities_adaline)
+
+mean_specificity_adaline = np.mean(specificities_adaline)
+std_specificity_adaline = np.std(specificities_adaline)
+max_specificity_adaline = max(specificities_adaline)
+min_specificity_adaline = min(specificities_adaline)
+
+print("Perceptron Results:")
+print(f"Mean Accuracy: {mean_accuracy_perceptron * 100}")
+print(f"Desvio padrao: {std_accuracy_perceptron * 100}")
+print(f"Max Accuracy: {max_accuracy_perceptron * 100}")
+print(f"Min Accuracy: {min_accuracy_perceptron * 100}")
+print("")
+print(f"Mean Sensitivity: {mean_sensitivity_perceptron}")
+print(f"Standard Deviation Sensitivity: {std_sensitivity_perceptron}")
+print(f"Max Sensitivity: {max_sensitivity_perceptron}")
+print(f"Min Sensitivity: {min_sensitivity_perceptron}")
+print("")
+print(f"Mean Specificity: {mean_specificity_perceptron}")
+print(f"Standard Deviation Specificity: {std_specificity_perceptron}")
+print(f"Max Specificity: {max_specificity_perceptron}")
+print(f"Min Specificity: {min_specificity_perceptron}")
+print("")
+print("Adaline Results:")
+print(f"Mean Accuracy: {mean_accuracy_adaline * 100}")
+print(f"Standard Deviation: {std_accuracy_adaline * 100}")
+print(f"Max Accuracy: {max_accuracy_adaline * 100}")
+print(f"Min Accuracy: {min_accuracy_adaline * 100}")
+print("")
+print(f"Mean Sensitivity: {mean_sensitivity_adaline}")
+print(f"Standard Deviation Sensitivity: {std_sensitivity_adaline}")
+print(f"Max Sensitivity: {max_sensitivity_adaline}")
+print(f"Min Sensitivity: {min_sensitivity_adaline}")
+print("")
+print(f"Mean Specificity: {mean_specificity_adaline}")
+print(f"Standard Deviation Specificity: {std_specificity_adaline}")
+print(f"Max Specificity: {max_specificity_adaline}")
+print(f"Min Specificity: {min_specificity_adaline}")
+
+# Plot confusion matrix best and worst accuracy perceptron
+plot_confusion_matrix(Y_teste_best_accuracy_perceptron, y_pred_perceptron)
+plot_confusion_matrix(Y_teste_worst_accuracy_perceptron, y_pred_perceptron)
+
+# Plot confusion matrix best and worst accuracy adaline
+plot_confusion_matrix(Y_teste_best_accuracy_adaline, y_pred_adaline)
+plot_confusion_matrix(Y_teste_worst_accuracy_adaline, y_pred_adaline)
+
+# Melhor caso
+plt.scatter(X_teste_best_accuracy_perceptron[:, 1], X_teste_best_accuracy_perceptron[:,
+            2], c=Y_teste_best_accuracy_perceptron, linewidths=0.4, edgecolors='k')
+plt.title("Gráfico de Dispersão (Melhor caso perceptron) ")
 plt.xlabel("x")
 plt.ylabel("y")
 plt.show()
 
-# Plot do hiperplano de separação do Adaline
-w_adaline = train_adaline(X_treino, Y_treino, 0.001, 100, 0.7)
-xx = np.linspace(-2, 2)
-yy_adaline = -w_adaline[0]/w_adaline[2] - w_adaline[1]/w_adaline[2] * xx
+# Pior caso
+plt.scatter(X_teste_worst_accuracy_perceptron[:, 1], X_teste_worst_accuracy_perceptron[:,
+            2], c=Y_teste_worst_accuracy_perceptron, linewidths=0.4, edgecolors='k')
+plt.title("Gráfico de Dispersão (Pior caso perceptron) ")
+plt.xlabel("x")
+plt.ylabel("y")
+plt.show()
 
-plt.plot(xx, yy_adaline, 'k-')
-plt.scatter(X[:, 1], X[:, 2], c=Y, linewidths=0.4, edgecolors='k')
-plt.title("Hiperplano de Separação do Adaline")
+# Melhor caso
+plt.scatter(X_teste_best_accuracy_adaline[:, 1], X_teste_best_accuracy_adaline[:,
+            2], c=Y_teste_best_accuracy_adaline, linewidths=0.4, edgecolors='k')
+plt.title("Gráfico de Dispersão (Melhor caso adaline) ")
+plt.xlabel("x")
+plt.ylabel("y")
+plt.show()
+
+# Pior caso
+plt.scatter(X_teste_worst_accuracy_adaline[:, 1], X_teste_worst_accuracy_adaline[:,
+            2], c=Y_teste_worst_accuracy_adaline, linewidths=0.4, edgecolors='k')
+plt.title("Gráfico de Dispersão (Pior caso adaline) ")
 plt.xlabel("x")
 plt.ylabel("y")
 plt.show()
