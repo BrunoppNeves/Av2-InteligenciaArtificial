@@ -124,7 +124,7 @@ def especificidade(y_true, y_pred):
 
 
 # Função para criar gráfico de matriz de confusão
-def plot_confusion_matrix(y_true, y_pred):
+def plot_confusion_matrix(y_true, y_pred, title):
     TP = sum((y_true == 1) & (y_pred == 1))
     FN = sum((y_true == 1) & (y_pred == -1))
     FP = sum((y_true == -1) & (y_pred == 1))
@@ -133,7 +133,7 @@ def plot_confusion_matrix(y_true, y_pred):
     confusion_matrix = np.array([[TN, FP], [FN, TP]])
 
     plt.imshow(confusion_matrix, interpolation='nearest', cmap=plt.cm.Blues)
-    plt.title("Matriz de Confusão")
+    plt.title(title)
     plt.colorbar()
     tick_marks = np.arange(2)
     plt.xticks(tick_marks, ["Classe Negativa", "Classe Positiva"])
@@ -167,9 +167,9 @@ X_teste_best_accuracy_adaline = []
 Y_teste_worst_accuracy_adaline = []
 X_teste_worst_accuracy_adaline = []
 
-for round in range(10):
-    X_treino, Y_treino, X_teste, Y_teste = dividir_dados()
+for round in range(100):
 
+    X_treino, Y_treino, X_teste, Y_teste = dividir_dados()
     w_perceptron = train_perceptron(X_treino, Y_treino, 100, 0.8)
     w_adaline = train_adaline(X_treino, Y_treino, 0.001, 100, 0.7)
 
@@ -282,42 +282,40 @@ print(f"Standard Deviation Specificity: {std_specificity_adaline}")
 print(f"Max Specificity: {max_specificity_adaline}")
 print(f"Min Specificity: {min_specificity_adaline}")
 
-# Plot confusion matrix best and worst accuracy perceptron
-plot_confusion_matrix(Y_teste_best_accuracy_perceptron, y_pred_perceptron)
-plot_confusion_matrix(Y_teste_worst_accuracy_perceptron, y_pred_perceptron)
+plot_confusion_matrix(Y_teste_best_accuracy_perceptron,
+                      y_pred_perceptron, "Matriz de Confusão (Melhor caso perceptron)")
+plot_confusion_matrix(Y_teste_worst_accuracy_perceptron,
+                      y_pred_perceptron, "Matriz de Confusão (Pior caso perceptron)")
 
-# Plot confusion matrix best and worst accuracy adaline
-plot_confusion_matrix(Y_teste_best_accuracy_adaline, y_pred_adaline)
-plot_confusion_matrix(Y_teste_worst_accuracy_adaline, y_pred_adaline)
+plot_confusion_matrix(Y_teste_best_accuracy_adaline,
+                      y_pred_adaline, "Matriz de Confusão (Melhor caso adaline)")
+plot_confusion_matrix(Y_teste_worst_accuracy_adaline,
+                      y_pred_adaline, "Matriz de Confusão (Pior caso adaline")
 
-# Melhor caso
 plt.scatter(X_teste_best_accuracy_perceptron[:, 1], X_teste_best_accuracy_perceptron[:,
             2], c=Y_teste_best_accuracy_perceptron, linewidths=0.4, edgecolors='k')
-plt.title("Gráfico de Dispersão (Melhor caso perceptron) ")
+plt.title("Gráfico de hiperplano (Melhor caso perceptron) ")
 plt.xlabel("x")
 plt.ylabel("y")
 plt.show()
 
-# Pior caso
 plt.scatter(X_teste_worst_accuracy_perceptron[:, 1], X_teste_worst_accuracy_perceptron[:,
             2], c=Y_teste_worst_accuracy_perceptron, linewidths=0.4, edgecolors='k')
-plt.title("Gráfico de Dispersão (Pior caso perceptron) ")
+plt.title("Gráfico de hiperplano (Pior caso perceptron) ")
 plt.xlabel("x")
 plt.ylabel("y")
 plt.show()
 
-# Melhor caso
 plt.scatter(X_teste_best_accuracy_adaline[:, 1], X_teste_best_accuracy_adaline[:,
             2], c=Y_teste_best_accuracy_adaline, linewidths=0.4, edgecolors='k')
-plt.title("Gráfico de Dispersão (Melhor caso adaline) ")
+plt.title("Gráfico de hiperplano (Melhor caso adaline) ")
 plt.xlabel("x")
 plt.ylabel("y")
 plt.show()
 
-# Pior caso
 plt.scatter(X_teste_worst_accuracy_adaline[:, 1], X_teste_worst_accuracy_adaline[:,
             2], c=Y_teste_worst_accuracy_adaline, linewidths=0.4, edgecolors='k')
-plt.title("Gráfico de Dispersão (Pior caso adaline) ")
+plt.title("Gráfico de hiperplano (Pior caso adaline) ")
 plt.xlabel("x")
 plt.ylabel("y")
 plt.show()
