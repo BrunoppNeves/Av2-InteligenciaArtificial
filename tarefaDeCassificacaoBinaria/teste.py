@@ -2,12 +2,12 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 # Carregando dados
-dados = np.loadtxt('tarefaDeCassificacaoBinaria\DataAV2.csv', delimiter=',')
+dados = np.loadtxt('tarefaDeCassificacaoBinaria/DataAV2.csv', delimiter=',')
 X = dados[:, 0:2]
 Y = dados[:, 2]
 N, p = X.shape
 
-plt.scatter(X[:, 0], X[:, 1], c=Y)
+plt.scatter(X[:, 0], X[:, 1], c=Y, linewidths=0.4, edgecolors='k')
 plt.title("Gráfico de Dispersão")
 plt.xlabel("x")
 plt.ylabel("y")
@@ -93,7 +93,6 @@ def adaline_test(w, x_unknown):
     #     print("ADALINE: A amostra pertence à classe B")
     return y_t
 
-X_treino, Y_treino, X_teste, Y_teste = dividir_dados()
 
 # Funções para métricas de avaliação
 def acuracia(y_true, y_pred):
@@ -120,7 +119,6 @@ def plot_confusion_matrix(y_true, y_pred):
     FN = sum((y_true == 1) & (y_pred == -1))
     FP = sum((y_true == -1) & (y_pred == 1))
     TN = sum((y_true == -1) & (y_pred == -1))
-    print(f"TP: {TP}, FN: {FN}, FP: {FP}, TN: {TN}")
 
     confusion_matrix = np.array([[TN, FP], [FN, TP]])
 
@@ -133,23 +131,23 @@ def plot_confusion_matrix(y_true, y_pred):
     plt.xlabel("Previsões")
     plt.ylabel("Rótulos Reais")
     plt.show()
+    
+X_treino, Y_treino, X_teste, Y_teste = dividir_dados()
 
-# Treine o Perceptron
-pesos_perceptron = train_perceptron(X_treino, Y_treino, 100, 0.1)
 
-# Teste o Perceptron
-y_pred_perceptron = [perceptron_test(pesos_perceptron, x) for x in X_teste]
+for i in range(10):
+    w_perceptron = train_perceptron(X_treino, Y_treino, 100, 0.8)
+    w_adaline = train_adaline(X_treino, Y_treino, 0.001, 100, 0.7)
 
-# Calcule as métricas para o Perceptron
-accuracy_perceptron = acuracia(Y_teste, y_pred_perceptron)
-sensitivity_perceptron = sensibilidade(Y_teste, y_pred_perceptron)
-specificity_perceptron = especificidade(Y_teste, y_pred_perceptron)
+    y_pred_perceptron = np.zeros(len(X_teste))
+    y_pred_adaline = np.zeros(len(X_teste))
 
-# Treine o Adaline
-pesos_adaline = train_adaline(X_treino, Y_treino, 0.0001, 100, 0.1)
+    for i in range(len(X_teste)):
+        y_pred_perceptron[i] = perceptron_test(w_perceptron, X_teste[i])
+        y_pred_adaline[i] = adaline_test(w_adaline, X_teste[i])
 
-# Teste o Adaline
-y_pred_adaline = [adaline_test(pesos_adaline, x) for x in X_teste]
+    accuracy_perceptron = acuracia(Y_teste, y_pred_perceptron)
+    accuracy_adaline = acuracia(Y_teste, y_pred_adaline)
 
 # Calcule as métricas para o Adaline
 accuracy_adaline = acuracia(Y_teste, y_pred_adaline)
@@ -174,23 +172,25 @@ else:
 print(f"Acurácia do Perceptron: {accuracy_perceptron * 100}")
 print(f"Acurácia do Adaline: {accuracy_adaline * 100}")
 
-w_perceptron = train_perceptron(X_treino, Y_treino, 100, 0.1)
-xx = np.linspace(np.min(X[:,1]), np.max(X[:,1]), 100)
+# Plot do hiperplano de separação do Perceptron
+w_perceptron = train_perceptron(X_treino, Y_treino, 100, 0.7)
+xx = np.linspace(-2, 2)
 yy_perceptron = -w_perceptron[0]/w_perceptron[2] - w_perceptron[1]/w_perceptron[2] * xx
 
 plt.plot(xx, yy_perceptron, 'k-')
-plt.scatter(X[:, 1], X[:, 2], c=Y)
+plt.scatter(X[:, 1], X[:, 2], c=Y, linewidths=0.4, edgecolors='k')
 plt.title("Hiperplano de Separação do Perceptron")
 plt.xlabel("x")
 plt.ylabel("y")
 plt.show()
 
 # Plot do hiperplano de separação do Adaline
-w_adaline = train_adaline(X_treino, Y_treino, 0.0001, 100, 0.1)
+w_adaline = train_adaline(X_treino, Y_treino, 0.001, 100, 0.7)
+xx = np.linspace(-2, 2)
 yy_adaline = -w_adaline[0]/w_adaline[2] - w_adaline[1]/w_adaline[2] * xx
 
 plt.plot(xx, yy_adaline, 'k-')
-plt.scatter(X[:, 1], X[:, 2], c=Y)
+plt.scatter(X[:, 1], X[:, 2], c=Y, linewidths=0.4, edgecolors='k')
 plt.title("Hiperplano de Separação do Adaline")
 plt.xlabel("x")
 plt.ylabel("y")
